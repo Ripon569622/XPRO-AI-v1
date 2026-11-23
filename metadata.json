@@ -1,0 +1,6 @@
+{
+  "name": "XPRO AI",
+  "description": "Futuristic AI assistant app with Gemini & OpenAI chat, voice assistant, AI image generator, coding, translation, writing, math solver, study tools, and cloud history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

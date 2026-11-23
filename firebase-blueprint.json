@@ -1,0 +1,136 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated XPRO AI user profile and workspace metadata.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name from Google Sign-In."
+        },
+        "email": {
+          "type": "string",
+          "description": "Optional email address of the user."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Optional profile avatar URL."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "displayName", "createdAt", "updatedAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "A saved XPRO AI conversation thread.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Conversation title (1-120 chars)."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["CHAT", "CODING", "TRANSLATOR", "WRITING", "MATH", "STUDY", "VOICE"],
+          "description": "Active AI workspace mode."
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["GEMINI", "OPENAI"],
+          "description": "AI model provider used in this thread."
+        },
+        "lastMessagePreview": {
+          "type": "string",
+          "description": "Truncated preview of the latest message (0-300 chars)."
+        },
+        "pinned": {
+          "type": "boolean",
+          "description": "Whether the conversation is pinned to the top."
+        },
+        "messageCount": {
+          "type": "integer",
+          "description": "Total number of messages in this conversation."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-activity timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "title", "mode", "provider", "lastMessagePreview", "pinned", "messageCount", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "An individual message inside a saved XPRO AI conversation.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["USER", "ASSISTANT"],
+          "description": "Sender role."
+        },
+        "content": {
+          "type": "string",
+          "description": "Message text content (1-32000 chars)."
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["GEMINI", "OPENAI"],
+          "description": "Provider that generated or received the message."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["CHAT", "CODING", "TRANSLATOR", "WRITING", "MATH", "STUDY", "VOICE"],
+          "description": "Assistant mode used for this turn."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "role", "content", "provider", "mode", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Per-user profile document."
+    },
+    "/users/{userId}/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "User's saved AI conversations."
+    },
+    "/users/{userId}/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages belonging to a user's conversation."
+    }
+  }
+}
