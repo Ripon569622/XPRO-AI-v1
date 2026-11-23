@@ -89,27 +89,29 @@ jobs:
           fi
 
       - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          accept-android-sdk-licenses: true
+          packages: 'platform-tools platforms;android-36 platforms;android-36.1 build-tools;36.0.0'
+
+      - name: Verify Android SDK and licenses
         shell: bash
         run: |
-          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
-          if [ ! -d "$SDK_ROOT" ]; then
-            echo "::error::Android SDK root directory not found at $SDK_ROOT"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          if [ -z "$SDK_ROOT" ] || [ ! -d "$SDK_ROOT" ]; then
+            echo "::error::Android SDK root is not configured."
             exit 1
           fi
-          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
-
-          SDKMANAGER=$(find "$SDK_ROOT" -name sdkmanager -type f 2>/dev/null | head -n 1 || true)
-          if [ -z "$SDKMANAGER" ]; then
-            SDKMANAGER=$(command -v sdkmanager || true)
-          fi
-          if [ -z "$SDKMANAGER" ]; then
-            echo "::error::sdkmanager could not be found under $SDK_ROOT"
-            exit 1
-          fi
-
-          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" --sdk_root="$SDK_ROOT" "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+          echo "ANDROID_HOME=$SDK_ROOT"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-$SDK_ROOT}"
+          yes | sdkmanager --sdk_root="$SDK_ROOT" --licenses >/dev/null 2>&1 || true
+          for required in "platform-tools" "platforms/android-36.1" "build-tools/36.0.0"; do
+            if [ ! -d "$SDK_ROOT/$required" ]; then
+              echo "::error::Required Android SDK component missing: $SDK_ROOT/$required"
+              exit 1
+            fi
+          done
+          echo "Verified Android SDK platform 36.1, build-tools 36.0.0, and accepted licenses."
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace --no-daemon
